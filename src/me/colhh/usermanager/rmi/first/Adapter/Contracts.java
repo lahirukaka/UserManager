@@ -23,5 +23,6 @@ public class Contracts {
     public static final String FIELD_NAME_PASSWORD = "hash";
     public static final String FIELD_NAME_LAST_LOGIN = "last_login";
     public static final String FIELD_NAME_IS_LOGGED = "logged";
+    public static final String FIELD_NAME_IS_WRITABLE = "iswritable";
     
 }

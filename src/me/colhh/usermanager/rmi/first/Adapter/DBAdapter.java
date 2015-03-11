@@ -12,6 +12,7 @@
 package me.colhh.usermanager.rmi.first.Adapter;
 
 import java.io.IOException;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,13 +21,16 @@ import me.colhh.mysqlmanager.MysqlAdapter;
 import me.colhh.usermanager.rmi.first.Holder.User;
 import me.colhh.usermanager.rmi.first.Holder.UserException;
 import me.colhh.usermanager.rmi.first.Holder.UserException.UserExceptionCodes;
+import me.colhh.usermanager.rmi.first.controller.UserControllerInterface;
 
 /**
  *
  * @author Lahiru Udana <lahirukaka@gmail.com>
  */
-public class DBAdapter {
-
+public class DBAdapter extends UnicastRemoteObject implements UserControllerInterface{
+    
+    public DBAdapter() throws Exception {}
+    
     /**
      * Returns next available UID for the user
      * @return next available UID
@@ -34,8 +38,8 @@ public class DBAdapter {
      * @throws ClassNotFoundException
      * @throws IOException 
      */
-    public static int getNextUid() throws SQLException, ClassNotFoundException,
-            IOException
+    @Override
+    public int getNextUid() throws Exception
     {
         ResultSet res = MysqlAdapter.querySql("SELECT `UID` FROM `users` ORDER "
                 + "BY `uid` DESC LIMIT 1;");
@@ -51,14 +55,15 @@ public class DBAdapter {
      * @throws ClassNotFoundException
      * @throws IOException
      * @throws NoSuchAlgorithmException 
+     * @throws me.colhh.usermanager.rmi.first.Holder.UserException 
      */
-    public static int addUser(User user) throws SQLException,
-            ClassNotFoundException, IOException, NoSuchAlgorithmException, UserException
+    @Override
+    public int addUser(User user) throws Exception
     {
         if(!MysqlAdapter.exists("SELECT `uname` FROM `users` WHERE `uname`=?", user.getUname()))
         {
-            return MysqlAdapter.executeSql("INSERT INTO `users` VALUES(?,?,?,0,0);", 
-                    user.getUID(),user.getUname(),user.getPasswordHash());
+            return MysqlAdapter.executeSql("INSERT INTO `users` VALUES(?,?,?,0,0,?);", 
+                    user.getUID(),user.getUname(),user.getPasswordHash(),user.Iswritable());
         }
         throw new UserException(UserExceptionCodes.USER_EXISTS);
     }
@@ -72,8 +77,8 @@ public class DBAdapter {
      * @throws IOException
      * @throws UserException 
      */
-    public static User deleteUser(String uname) throws SQLException,
-            ClassNotFoundException, IOException, UserException
+    @Override
+    public User deleteUser(String uname) throws Exception
     {
         if(MysqlAdapter.exists("SELECT `uname` FROM `users` WHERE `uname`=?", uname))
         {
@@ -94,8 +99,8 @@ public class DBAdapter {
      * @throws IOException 
      * @throws me.colhh.usermanager.rmi.first.Holder.UserException 
      */
-    public static ArrayList<User> queryUser(String sql, Object... params) 
-            throws UserException, SQLException, ClassNotFoundException, IOException
+    @Override
+    public ArrayList<User> queryUser(String sql, Object... params) throws Exception
     {
         ArrayList<User> list = new ArrayList<>();
         ResultSet res = MysqlAdapter.querySql(sql, params);
@@ -118,8 +123,17 @@ public class DBAdapter {
         throw new UserException(UserExceptionCodes.USER_NOT_EXISTING);
     }
     
-    public static User updateUserInfo(User user) 
-            throws SQLException, ClassNotFoundException, IOException, UserException
+    /**
+     * Update User Record
+     * @param user User Object with updated information
+     * @return Updated User Object
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws UserException 
+     */
+    @Override
+    public User updateUserInfo(User user) throws Exception
     {
         if(MysqlAdapter.exists("SELECT `UID` FROM `users` WHERE `UID`=?;", user.getUID()))
         {

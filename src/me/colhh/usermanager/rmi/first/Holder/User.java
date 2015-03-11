@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2015 Lahiru Udana <lahirukaka@gmail.com>.
  * All rights reserved. This program and the accompanying materials
@@ -11,6 +12,7 @@
 
 package me.colhh.usermanager.rmi.first.Holder;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,13 +21,16 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Lahiru Udana <lahirukaka@gmail.com>
  */
-public class User {
+public class User implements Serializable{
 
-    private final int uid;
-    private final String uname;
+    private int uid;
+    private String uname;
     private String hash = "";
     private long last_login = 0L;
     private boolean logged = false;
+    private boolean iswritable = false;
+   
+    protected User(){}
     
     public User(int uid, String uname)
     {
@@ -34,6 +39,22 @@ public class User {
     }
     
     /*-----------Getters and Setters---------*/
+    
+    protected void setUid(int uid) {
+        this.uid = uid;
+    }
+
+    protected void setUname(String uname) {
+        this.uname = uname;
+    }
+
+    public boolean Iswritable() {
+        return iswritable;
+    }
+
+    public void setIsWritable(boolean iswritable) {
+        this.iswritable = iswritable;
+    }
     
     public int getUID()
     {
@@ -69,6 +90,7 @@ public class User {
     public User setPasswordHash(String password) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
+        hash = "";
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(password.getBytes("UTF-8"));
         byte [] hashb = md.digest();
